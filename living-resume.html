@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Living Résumé Ecosystem | Gary Chen</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
+<script>if(!window.p5){document.write('<script src="https://cdn.jsdelivr.net/npm/p5@1.9.4/lib/p5.min.js"><\/script>')}</script>
+<style>
+:root{--bg:#070a11;--panel:#11151e;--ink:#f2efe9;--muted:#969ca8;--hair:rgba(255,255,255,.10);--exp:#ffc17a;--skill:#66ddea;--edu:#bba0fa;--award:#70ffbf}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:Inter,Arial,Helvetica,sans-serif}
+#simulation{position:fixed;left:0;top:0;overflow:hidden}
+#simTop{position:absolute;left:30px;top:22px;pointer-events:none;z-index:3}
+.smallcap{letter-spacing:.19em;text-transform:uppercase;font-size:10px;font-weight:700;color:#cbb9a5}
+#simTop h1{font-size:33px;letter-spacing:-.035em;line-height:1.05;margin:8px 0 5px;font-weight:600}
+#simTop p{font-size:12px;line-height:1.4;color:#bec2c7;margin:0;max-width:510px}
+#simBottom{position:absolute;bottom:24px;left:30px;z-index:3;pointer-events:none;display:flex;flex-direction:column;gap:4px}
+#simBottom .line{color:#8b919e;font-size:11px;letter-spacing:.06em}
+#event{font-size:12px;color:#e8decc;min-height:17px}
+aside{position:fixed;right:0;top:0;height:100%;width:320px;padding:27px 24px 20px;background:linear-gradient(170deg,rgba(20,26,36,.98),rgba(13,17,24,.99));box-shadow:-12px 0 45px rgba(0,0,0,.26);border-left:1px solid var(--hair);display:flex;flex-direction:column;gap:20px;overflow-y:auto;z-index:9}
+aside h2{font-size:22px;font-weight:600;letter-spacing:-.015em;line-height:1.13;margin:7px 0 7px}
+aside p{font-size:12px;line-height:1.46;color:#a5aab3;margin:0}
+#modeButtons{display:grid;gap:8px}
+button{cursor:pointer;font-family:inherit}
+.mode{width:100%;padding:12px 13px;text-align:left;background:#1a202a;color:#cfd4db;border:1px solid #353b47;border-radius:9px;transition:background .2s,border .2s;display:flex;align-items:center;gap:10px;font-size:12px;font-weight:650}
+.mode:hover{background:#28303a}.mode.active{background:#28303a;border-color:var(--accent);color:white}
+.mode .d{display:block;width:8px;height:8px;background:var(--accent);border-radius:50%;box-shadow:0 0 10px var(--accent)}
+#modeExplanation{min-height:54px;color:#adb4bf;font-size:12px;line-height:1.42}
+.section{border-top:1px solid var(--hair);padding-top:15px}
+.specimen{display:flex;align-items:center;gap:11px;margin-top:11px}
+.specimen svg{width:44px;height:44px;flex-shrink:0;overflow:visible}
+.specimen .n{font-size:12px;font-weight:650;line-height:1.15}
+.specimen .bio{font-size:10px;color:#939eae;line-height:1.3;margin-top:3px}
+.stat{margin-top:11px}
+.stathead{display:flex;align-items:baseline;justify-content:space-between;color:#c9cdd5;font-size:11px;margin-bottom:6px}
+.stathead strong{font-variant-numeric:tabular-nums;font-size:12px;color:#f5f3ed}
+.bar{height:3px;border-radius:4px;background:#303a43;overflow:hidden}
+.bar>div{height:100%;width:30%;border-radius:4px;transition:width .6s ease}
+#controls{display:flex;gap:9px;margin-top:auto;padding-top:15px;border-top:1px solid var(--hair)}
+.secondary{flex:1;text-align:center;border:1px solid #3b4350;border-radius:9px;background:#1b222b;color:#e5e5e5;padding:10px 0;font-weight:600;font-size:11px}
+.secondary:hover{background:#2a3340}
+#tinyDisclaimer{font-size:10px;color:#838d98;line-height:1.35;margin-top:8px}
+@media (max-width:850px){
+ #simulation{width:100%;height:63vh}
+ aside{top:auto;bottom:0;right:0;width:100%;height:37vh;min-height:250px;padding:13px 15px 15px;gap:11px;display:block;overflow:auto}
+ #simTop{left:14px;top:12px}#simTop h1{font-size:22px}#simTop p{display:none}
+ #simBottom{left:14px;bottom:10px}
+ #modeButtons{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:10px}
+ .mode{padding:9px;font-size:10px}
+ aside h2{font-size:18px;margin:3px 0}
+ .section{margin-top:13px}
+ .specimensGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 8px}
+ .specimen svg{width:32px;height:32px}
+ #controls{margin:13px 0 0}
+}
+</style>
+</head>
+<body>
+<div id="simulation">
+  <div id="simTop">
+    <div class="smallcap">Gary Chen / An unnatural transformation</div>
+    <h1>LIVING RÉSUMÉ ECOSYSTEM</h1>
+    <p>One résumé. Four biological identities. The market changes who grows, who survives, and who disappears.</p>
+  </div>
+  <div id="simBottom"><div id="event">A new environment begins to evolve.</div><div class="line">Click inside the field to disturb the organisms · live simulation</div></div>
+</div>
+<aside>
+  <header><div class="smallcap">01 / MARKET ENVIRONMENT</div><h2>Choose what matters.</h2><p>Change the employer's preference. Every organism responds differently.</p></header>
+  <div id="modeButtons">
+    <button class="mode active" data-mode="seniority" style="--accent:#ffc17a"><span class="d"></span> Seniority / Experience</button>
+    <button class="mode" data-mode="software" style="--accent:#66ddea"><span class="d"></span> Software / Skills</button>
+    <button class="mode" data-mode="education" style="--accent:#bba0fa"><span class="d"></span> Education / Structure</button>
+    <button class="mode" data-mode="prestige" style="--accent:#70ffbf"><span class="d"></span> Prestige / Awards</button>
+  </div>
+  <div id="modeExplanation"></div>
+  <div class="section"><div class="smallcap">02 / SPECIES · REAL BIOLOGICAL FORMS</div>
+    <div class="specimensGrid">
+      <div class="specimen">
+        <svg viewBox="0 0 50 50" fill="none" stroke="#bba0fa"><circle cx="25" cy="25" r="20" stroke-width="2"/><circle cx="25" cy="25" r="13"/><circle cx="25" cy="25" r="5"/><path d="M25 4V46M4 25H46M10 10L40 40M40 10L10 40"/><circle cx="25" cy="25" r="17" stroke-width=".6" stroke-dasharray="1 2"/></svg>
+        <div><div class="n">Education</div><div class="bio">Centric diatom · rigid radial shell</div></div>
+      </div>
+      <div class="specimen">
+        <svg viewBox="0 0 50 50" fill="none" stroke="#66ddea"><g transform="rotate(-24 25 25)"><path d="M11 23C14 4 37 5 41 23C42 43 13 43 11 23Z" stroke-width="2"/><ellipse cx="25" cy="24" rx="5" ry="8"/><path d="M13 13l-4 -3 M18 10L15 5M25 8V3 M33 10l3 -5M40 15l5 -3M42 25h5 M39 36l5 4M32 40l2 6M22 41v6M13 35l-4 4 M10 27H4"/></g></svg>
+        <div><div class="n">Skills</div><div class="bio">Paramecium · cilia + binary fission</div></div>
+      </div>
+      <div class="specimen">
+        <svg viewBox="0 0 50 50" fill="none" stroke="#ffc17a" stroke-width="2.3" stroke-linecap="round"><path d="M4 43L15 29L24 30L34 19L46 8M15 29L9 16M24 30L31 40M34 19L26 8M34 19L46 26"/><circle cx="15" cy="29" r="3" fill="#ffc17a"/><circle cx="34" cy="19" r="3" fill="#ffc17a"/></svg>
+        <div><div class="n">Experience</div><div class="bio">Physarum · living vascular network</div></div>
+      </div>
+      <div class="specimen">
+        <svg viewBox="0 0 50 50" fill="none" stroke="#70ffbf"><circle cx="25" cy="25" r="17" stroke-width="2"/><circle cx="25" cy="25" r="13" stroke-opacity=".45"/><circle cx="31" cy="19" r="4"/><path d="M25 2v8M25 40v8M2 25h8M40 25h8M9 9l6 6M35 35l6 6M41 9l-6 6M15 35l-6 6" stroke-width="1.6"/></svg>
+        <div><div class="n">Awards</div><div class="bio">Noctiluca · triggered brief flashes</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="section"><div class="smallcap">03 / LIVE ECOLOGICAL RESPONSE</div>
+    <div class="stat"><div class="stathead">Skills · swimming cells<strong id="skills-stat">—</strong></div><div class="bar"><div id="skills-bar" style="background:#66ddea"></div></div></div>
+    <div class="stat"><div class="stathead">Education · territory<strong id="edu-stat">—</strong></div><div class="bar"><div id="edu-bar" style="background:#bba0fa"></div></div></div>
+    <div class="stat"><div class="stathead">Experience · network branches<strong id="experience-stat">—</strong></div><div class="bar"><div id="experience-bar" style="background:#ffc17a"></div></div></div>
+    <div class="stat"><div class="stathead">Awards · surviving cells<strong id="awards-stat">—</strong></div><div class="bar"><div id="awards-bar" style="background:#70ffbf"></div></div></div>
+  </div>
+  <div id="controls"><button id="reset" class="secondary">Restart ecology</button><button id="pause" class="secondary">Pause</button></div>
+  <div id="tinyDisclaimer">Biological forms are researched references. Competition and conversion are speculative metaphors, not claims about real species interacting in nature.</div>
+</aside>
+<script>
+/*
+ * VISUAL RULES LOCKED FOR THIS WORK
+ * Education: rigid radially perforated large diatoms with a surrounding territorial membrane.
+ * Skills: fast ciliated Paramecium with nuclei, vacuoles, and visible fission.
+ * Experience: ONE connected Physarum-like tubular network with branching tips and flowing cytoplasm.
+ * Awards: sparse Noctiluca-like vacuolated spheres; flashes are brief and disturbance-driven.
+ * The four silhouettes, inner anatomy, locomotion, and growth modes must remain distinct.
+ */
+const RESUME = {name:'Gary Chen',education:2,experience:4,skills:8,awards:3};
+const ENV={
+ seniority:{label:'Seniority',text:'Experience spreads through connected tubes. Its growing network fills passages, while Skills lose mobility and Awards remain scarce.',tips:218,bugs:35,diatoms:6,eduRadius:41,awards:12,skillSpeed:.9,awardLife:.9992,flash:0.03,branchSpeed:5},
+ software:{label:'Software proficiency',text:'Ciliated Skills divide rapidly. Swarms absorb nearby Awards; the older Experience network retracts while Education stays compact.',tips:85,bugs:118,diatoms:6,eduRadius:39,awards:5,skillSpeed:1.65,awardLife:.996,flash:0.02,branchSpeed:2},
+ education:{label:'Education focus',text:'Large silica diatoms expand into rigid territory. Skills are pushed away, Experience branches turn aside, and Awards are squeezed outward.',tips:78,bugs:26,diatoms:12,eduRadius:106,awards:8,skillSpeed:.75,awardLife:.9968,flash:.015,branchSpeed:2},
+ prestige:{label:'Prestige',text:'Rare Noctiluca-like Awards survive and produce brief flashes. Other species are drawn to their light, but the glow is vulnerable to future market changes.',tips:92,bugs:30,diatoms:6,eduRadius:44,awards:31,skillSpeed:1,awardLife:1,flash:0.16,branchSpeed:2}
+};
+let mode='seniority',cfg=ENV[mode],canvasW=0,canvasH=0;
+let skills=[],education=[],awards=[],veins=[],tips=[],impulses=[],dust=[],timer=0,paused=false,lastEventFrame=0;
+const primary={skill:[102,221,234],edu:[187,160,250],exp:[255,193,122],award:[112,255,191]};
+let dim={w:0,h:0};
+function measure(){const mobile=windowWidth<=850;return {w:mobile?windowWidth:Math.max(500,windowWidth-320),h:mobile?Math.round(windowHeight*.63):windowHeight};}
+function rand(a,b){return random(a,b)}
+function near(a,b){return dist(a.x,a.y,b.x,b.y)}
+function event(msg){if(frameCount-lastEventFrame>40){document.getElementById('event').textContent=msg;lastEventFrame=frameCount;}}
+function makeSkill(x=rand(30,canvasW-30),y=rand(110,canvasH-35),split=0){return {x,y,vx:rand(-1,1),vy:rand(-1,1),angle:rand(-PI,PI),r:rand(10,15),age:0,division:split,seed:rand(0,999),pulse:rand(0,9),health:1};}
+function makeAward(x=rand(35,canvasW-35),y=rand(115,canvasH-35)){return {x,y,vx:rand(-.26,.26),vy:rand(-.26,.26),r:rand(13,22),hp:1,flash:0,seed:rand(0,999),age:0};}
+function makeEducation(x=rand(80,canvasW-80),y=rand(160,canvasH-80)){return {x,y,r:rand(28,39),target:39,phase:rand(0,999),seed:rand(0,999),angle:rand(0,TAU)};}
+function initVeins(){veins=[];tips=[];let root={x:canvasW*.37,y:canvasH*.52,parent:-1,dir:0,depth:0,scale:1};veins.push(root);for(let j=0;j<7;j++){let ang=TAU*j/7;let parent=0;for(let k=0;k<5;k++){let p=veins[parent];let a=ang+sin(k*.8+j)*.25;let n={x:p.x+cos(a)*12,y:p.y+sin(a)*12,parent,dir:a,depth:k+1,scale:rand(.7,1.2)};veins.push(n);parent=veins.length-1;}tips.push(parent)}}
+function initialize(){skills=[];education=[];awards=[];impulses=[];dust=[];lastEventFrame=-99;cfg=ENV[mode];
+ for(let i=0;i<32;i++) skills.push(makeSkill());
+ for(let i=0;i<6;i++) education.push(makeEducation());
+ for(let i=0;i<14;i++) awards.push(makeAward());
+ initVeins();for(let i=0;i<75;i++)dust.push({x:rand(0,canvasW),y:rand(0,canvasH),r:rand(.3,1.1),tw:rand(0,6)});
+}
+function setup(){dim=measure();canvasW=dim.w;canvasH=dim.h;let c=createCanvas(canvasW,canvasH);c.parent('simulation');pixelDensity(1);frameRate(60);initialize();setMode('seniority');
+ document.querySelectorAll('button.mode').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+ document.getElementById('reset').addEventListener('click',()=>{initialize();event('The ecological field has been re-seeded.');});
+ document.getElementById('pause').addEventListener('click',()=>{paused=!paused;document.getElementById('pause').textContent=paused?'Resume':'Pause';});
+}
+function setMode(v){mode=v;cfg=ENV[v];document.querySelectorAll('button.mode').forEach(b=>b.classList.toggle('active',b.dataset.mode===v));document.getElementById('modeExplanation').textContent=cfg.text;
+ document.getElementById('event').textContent=cfg.label+': the ecology is changing.';lastEventFrame=frameCount;
+}
+function windowResized(){dim=measure();canvasW=dim.w;canvasH=dim.h;resizeCanvas(canvasW,canvasH);initialize()}
+function mousePressed(){if(mouseX>=0&&mouseY>=0&&mouseX<canvasW&&mouseY<canvasH){disturb(mouseX,mouseY);return false;}}
+function touchStarted(){if(touches.length&&touches[0].x<canvasW&&touches[0].y<canvasH){disturb(touches[0].x,touches[0].y);return false;}}
+function disturb(x,y){impulses.push({x,y,r:0,alpha:1});for(let a of awards){if(dist(x,y,a.x,a.y)<140)a.flash=1.3;}event('A disturbance triggered bioluminescent flashes.');}
+function draw(){drawBackground();if(!paused){timer++;adjustPopulation();updateEducation();updateSkills();updateAwards();updateNetwork();updateImpulses();}drawTerritories();drawExperience();drawEducation();drawAwards();drawSkills();drawImpulses();if(frameCount%18===0)updateStats();}
+function drawBackground(){background(4,7,13);const ctx=drawingContext;let g=ctx.createRadialGradient(canvasW*.48,canvasH*.5,4,canvasW*.48,canvasH*.5,Math.max(canvasW,canvasH)*.78);
+ let center= mode==='software'?'10,27,37':mode==='education'?'19,16,35':mode==='prestige'?'10,28,25':'33,20,24';g.addColorStop(0,'rgb('+center+')');g.addColorStop(1,'#05070b');ctx.fillStyle=g;ctx.fillRect(0,0,canvasW,canvasH);
+ noStroke();for(let q of dust){fill(115,167,187,20+12*sin(timer*.01+q.tw));circle(q.x,q.y,q.r*2)} }
+function adjustPopulation(){if(timer%10!==0)return;
+ let cap=cfg.bugs;
+ if(skills.length<cap){let births=mode==='software'?3:1;for(let j=0;j<births&&skills.length<cap;j++){const p=random(skills);let child=makeSkill(constrain(p.x+rand(-12,12),15,canvasW-15),constrain(p.y+rand(-12,12),90,canvasH-15),1);p.division=.6;skills.push(child);if(mode==='software'&&timer%80===0)event('Skills are multiplying by binary fission.');}}
+ else if(skills.length>cap){let rem=mode==='software'?1:2;skills.splice(0,Math.min(rem,skills.length-cap));}
+ if(education.length<cfg.diatoms&&timer%40===0){education.push(makeEducation());event('A new radial silica shell formed.');}
+ if(education.length>cfg.diatoms&&timer%70===0)education.splice(0,1);
+ if(awards.length<cfg.awards&&timer%30===0){awards.push(makeAward());}
+ if(awards.length>cfg.awards&&timer%60===0){awards.splice(0,1);}
+}
+function updateEducation(){for(let d of education){d.target=cfg.eduRadius*(.82+.25*noise(d.seed));d.r=lerp(d.r,d.target,.018);d.angle+=.00015;d.x+=sin(timer*.006+d.seed)*.06;d.y+=cos(timer*.004+d.seed)*.05;}}
+function updateSkills(){let m=mode;
+ for(let b of skills){b.age++;b.pulse+=.07;let speed=cfg.skillSpeed;
+  b.vx+=random(-.4,.4);b.vy+=random(-.4,.4);
+  // Award attraction and consumption / Prestige attraction without predation
+  for(let a of awards){let dx=a.x-b.x,dy=a.y-b.y,d2=dx*dx+dy*dy; if(d2<210*210&&d2>1){let dis=sqrt(d2);
+    if(m==='software'){b.vx+=(dx/dis)*.22;b.vy+=(dy/dis)*.22;}
+    else if(m==='prestige'&&a.flash>.2){b.vx+=(dx/dis)*.12;b.vy+=(dy/dis)*.12;}
+  }}
+  // Rigid education discs repel swimming organisms
+  for(let d of education){let dx=b.x-d.x,dy=b.y-d.y,L=sqrt(dx*dx+dy*dy)+.01;let lim=d.r+b.r*.6+7;
+    if(L<lim){let f=(lim-L)*.075;b.vx+=dx/L*f;b.vy+=dy/L*f;if(m==='education')speed*=.96;}}
+  // Physarum coverage limits the mobility of Skills under Seniority
+  if(m==='seniority'&&timer%3===0){for(let i=0;i<veins.length;i+=7){let v=veins[i];if(dist(v.x,v.y,b.x,b.y)<24){speed*=.6;break;}}}
+  b.vx=lerp(b.vx,cos(b.angle)*speed,.11);b.vy=lerp(b.vy,sin(b.angle)*speed,.11);
+  b.angle=lerp(b.angle,atan2(b.vy,b.vx),.16);let v=sqrt(b.vx*b.vx+b.vy*b.vy)+.001;
+  b.x+=b.vx*min(2.8,speed/v);b.y+=b.vy*min(2.8,speed/v);
+  if(b.x<22||b.x>canvasW-22){b.vx*=-1;b.x=constrain(b.x,22,canvasW-22);b.angle=atan2(b.vy,b.vx);}
+  if(b.y<109||b.y>canvasH-26){b.vy*=-1;b.y=constrain(b.y,109,canvasH-26);b.angle=atan2(b.vy,b.vx);}
+  b.division=max(0,b.division-.03);
+ }
+}
+function updateAwards(){let eaten=[];
+ for(let a of awards){a.age++;a.flash=max(0,a.flash-.055);if(random()<cfg.flash/60) a.flash=1;
+ a.vx=constrain(a.vx+random(-.025,.025),-.32,.32);a.vy=constrain(a.vy+random(-.025,.025),-.32,.32);
+ if(mode==='prestige' && a.flash>.12){a.hp=min(1,a.hp+.002);}else a.hp*=cfg.awardLife;
+ // Diatom territories push awards toward the margins
+ for(let d of education){let dx=a.x-d.x,dy=a.y-d.y,L=sqrt(dx*dx+dy*dy)+.01,lim=d.r+a.r*.6;
+   if(L<lim){a.vx+=dx/L*.08;a.vy+=dy/L*.08;a.hp-=mode==='education'?.0009:0;}}
+ a.x+=a.vx;a.y+=a.vy;a.x=constrain(a.x,25,canvasW-25);a.y=constrain(a.y,115,canvasH-30);
+ if(mode==='software'){
+  for(let b of skills){let L=dist(b.x,b.y,a.x,a.y);if(L<a.r+b.r*.9+6){a.hp-=.025;a.flash=max(a.flash,.75);if(a.hp<.14){
+    eaten.push(a);impulses.push({x:a.x,y:a.y,r:2,alpha:.7});
+    if(skills.length<cfg.bugs+5){let daughter=makeSkill(b.x+rand(-9,9),b.y+rand(-9,9),1);skills.push(daughter);b.division=.8;}
+    event('Ciliated Skills absorbed an Award and divided.');break;}}}
+ }
+ if(mode==='prestige'&&a.flash>.25){for(let b of skills){if(dist(b.x,b.y,a.x,a.y)<a.r+25){b.vx*=.97;b.vy*=.97;a.hp=min(1.05,a.hp+.0008);}}}
+ if(mode==='seniority'&&timer%2===0){for(let i=1;i<veins.length;i+=4){let v=veins[i];if(dist(v.x,v.y,a.x,a.y)<a.r+7){a.hp-=.003;break;}}}
+ if(a.hp<.07)eaten.push(a);
+ }
+ if(eaten.length) awards=awards.filter(a=>!eaten.includes(a));
+}
+function updateNetwork(){let target=cfg.tips;
+ // Each network segment belongs to the same branching organism.
+ if(veins.length>target && timer%2===0){veins.pop();tips=tips.filter(i=>i<veins.length);if(!tips.length) tips=[max(0,veins.length-1)];return;}
+ if(veins.length>=target||timer%cfg.branchSpeed!==0)return;
+ if(!tips.length)tips=[max(0,veins.length-1)];let chosen=floor(rand(0,tips.length));let parentIdx=tips[chosen],p=veins[parentIdx];if(!p){tips.splice(chosen,1);return;}
+ let ang=p.dir+rand(-.44,.44),len=rand(8,16);let nx=p.x+cos(ang)*len,ny=p.y+sin(ang)*len;
+ for(let d of education){let dx=nx-d.x,dy=ny-d.y,L=sqrt(dx*dx+dy*dy)+.001,lim=d.r+14;
+ if(L<lim){ang=atan2(dy,dx)+HALF_PI*(random()<.5?-1:1);nx=p.x+cos(ang)*len;ny=p.y+sin(ang)*len;}}
+ if(nx<20||nx>canvasW-20||ny<112||ny>canvasH-30){ang+=PI*rand(.5,1.3);nx=p.x+cos(ang)*len;ny=p.y+sin(ang)*len;}
+ let n={x:constrain(nx,19,canvasW-19),y:constrain(ny,112,canvasH-29),parent:parentIdx,dir:ang,depth:p.depth+1,scale:rand(.65,1.25)};
+ veins.push(n);let ni=veins.length-1;tips[chosen]=ni;if(random()<(mode==='seniority'?.35:.14)&&tips.length<32)tips.push(parentIdx);
+ if(mode==='seniority'&&veins.length%20===0)event('Experience sent a new vein through the ecosystem.');
+}
+function updateImpulses(){for(let q of impulses){q.r+=3.8;q.alpha-=.017;}impulses=impulses.filter(q=>q.alpha>0)}
+function drawTerritories(){noStroke();for(let d of education){let r=d.r*1.25;
+ for(let k=3;k>=1;k--){fill(139,106,215,mode==='education'?3+k*2.7:2+k);circle(d.x,d.y,r*2*(1+k*.09));}
+ if(mode==='education'){fill(150,119,219,11);circle(d.x,d.y,d.r*2.35);}
+ }}
+function drawExperience(){if(veins.length<2)return;push();strokeCap(ROUND);
+ for(let i=1;i<veins.length;i++){let a=veins[i],b=veins[a.parent];if(!b)continue;let w=2.5+7*a.scale*(1-i/Math.max(veins.length,35)*.55);
+ stroke(255,139,77,20);strokeWeight(w*3.7);line(a.x,a.y,b.x,b.y);
+ stroke(236,133,105,46);strokeWeight(w*1.85);line(a.x,a.y,b.x,b.y);
+ stroke(255,187,107,165);strokeWeight(w*.8);line(a.x,a.y,b.x,b.y);
+ stroke(255,230,160,115);strokeWeight(max(1,w*.23));line(a.x,a.y,b.x,b.y);
+ // flowing cytoplasmic particle
+ if(i%3===0){let f=(timer*.012+i*.37)%1;noStroke();fill(255,239,185,155);circle(lerp(a.x,b.x,f),lerp(a.y,b.y,f),2.2);}
+ }
+ noStroke();for(let index of tips){let p=veins[index];if(!p)continue;fill(254,196,106,85);ellipse(p.x,p.y,14,9);fill(255,230,165,185);ellipse(p.x,p.y,4,4);}
+ pop();}
+function drawEducation(){for(let d of education){push();translate(d.x,d.y);rotate(d.angle);let r=d.r;
+ // Thick silica body — angular, radial, concentric, perforated (not an amorphous blob)
+ noStroke();fill(94,61,170,35);circle(0,0,r*2.2);
+ fill(11,13,29,238);stroke(188,168,253,190);strokeWeight(2.2);circle(0,0,r*2);
+ noFill();stroke(180,171,254,155);strokeWeight(1.1);circle(0,0,r*1.74);circle(0,0,r*1.28);circle(0,0,r*.58);
+ let spokes=20;for(let i=0;i<spokes;i++){let a=TAU*i/spokes;
+ stroke(186,164,253,130);strokeWeight(1);line(cos(a)*r*.29,sin(a)*r*.29,cos(a)*r*.86,sin(a)*r*.86);
+ for(let j=1;j<=3;j++){let rr=r*(.36+j*.14);let px=cos(a+.03*j)*rr,py=sin(a+.03*j)*rr;noStroke();fill(173,159,239,100);circle(px,py,max(2,r*.056));}}
+ // skeletal lattice: rows of pores between spokes
+ noStroke();for(let k=0;k<16;k++){let a=TAU*k/16+.1;for(let j=0;j<3;j++){let rr=r*(.46+j*.16);fill(155,141,232,55+j*24);circle(cos(a+.11*j)*rr,sin(a+.11*j)*rr,max(1.4,r*.026));}}
+ noStroke();fill(84,64,163,150);circle(0,0,r*.42);fill(216,204,255,115);circle(0,0,r*.14);
+ pop();}}
+function drawSkills(){for(let b of skills){push();translate(b.x,b.y);rotate(b.angle);let r=b.r;let th=timer*.15+b.seed;
+ // translucent body, elongated slipper silhouette, ciliary fringe, central macro-nucleus, vacuoles, oral groove
+ noStroke();fill(46,185,212,24);ellipse(0,0,r*4.1,r*2.5);
+ fill(29,130,158,110);stroke(102,237,245,170);strokeWeight(1.35);
+ beginShape();vertex(-r*1.5,0);bezierVertex(-r*1.6,-r*.64,-r*.25,-r*.97,r*.66,-r*.69);bezierVertex(r*1.56,-r*.47,r*1.73,r*.35,r*.8,r*.65);bezierVertex(-r*.13,r*.96,-r*1.45,r*.7,-r*1.5,0);endShape(CLOSE);
+ // cilia around perimeter, moving independently
+ stroke(133,247,247,140);strokeWeight(.6);for(let j=0;j<33;j++){let a=TAU*j/33;let x=cos(a)*r*1.35,y=sin(a)*r*.78;let nx=cos(a),ny=sin(a);let sway=sin(th+j*.56)*r*.15;line(x,y,x+nx*r*.29-ny*sway,y+ny*r*.29+nx*sway);}
+ noStroke();fill(21,60,99,175);ellipse(r*.1,0,r*.81,r*.44);fill(209,248,254,160);ellipse(r*.16,0,r*.27,r*.18);
+ fill(151,245,251,95);ellipse(-r*.68,-r*.16,r*.37,r*.38);ellipse(r*.9,r*.18,r*.3,r*.34);
+ noFill();stroke(194,253,250,135);strokeWeight(.8);arc(-r*.14,r*.29,r*.94,r*.48,-.1,PI*.76);
+ // daughter-cell split shows the reproduction event; body briefly constricts
+ if(b.division>0){stroke(188,253,253,b.division*140);strokeWeight(1.6);line(0,-r*.72,0,r*.71);}
+ pop();}}
+function drawAwards(){for(let a of awards){push();translate(a.x,a.y);let r=a.r*(.65+.35*a.hp),flash=a.flash;
+ const ctx=drawingContext;
+ if(flash>.06){let glow=ctx.createRadialGradient(0,0,1,0,0,r*3.4);glow.addColorStop(0,'rgba(176,255,226,'+(.26*flash)+')');glow.addColorStop(.22,'rgba(83,255,192,'+(.2*flash)+')');glow.addColorStop(1,'rgba(74,255,182,0)');ctx.fillStyle=glow;ctx.beginPath();ctx.arc(0,0,r*3.4,0,TAU);ctx.fill();}
+ noStroke();fill(29,73,66,26);circle(0,0,r*2.25);
+ fill(16,42,47,160);stroke(133,254,205,130+min(100,flash*135));strokeWeight(1.4);circle(0,0,r*2);
+ noFill();stroke(157,255,211,48);strokeWeight(1);circle(0,0,r*1.68);
+ // transparent vacuole / eccentrically placed nucleus, radiating granules
+ stroke(106,228,186,90);strokeWeight(.9);noFill();circle(-r*.10,r*.08,r*1.4);
+ fill(58,215,160,95);noStroke();circle(r*.41,-r*.3,r*.45);fill(204,255,232,110+flash*90);circle(r*.46,-r*.34,r*.18);
+ for(let i=0;i<12;i++){let theta=i*TAU/12+a.seed;let rr=r*(.32+(i%3)*.13);fill(123,246,188,80+flash*105);circle(cos(theta)*rr,sin(theta)*rr,r*.08);}
+ if(flash>.05){stroke(149,255,210,flash*180);strokeWeight(1.2);for(let i=0;i<8;i++){let ang=TAU*i/8+a.seed;line(cos(ang)*r*1.05,sin(ang)*r*1.05,cos(ang)*r*(1.28+flash*.55),sin(ang)*r*(1.28+flash*.55));}}
+ pop();}}
+function drawImpulses(){noFill();for(let q of impulses){stroke(119,250,215,55*q.alpha);strokeWeight(1.5);circle(q.x,q.y,q.r*2);stroke(119,250,215,25*q.alpha);circle(q.x,q.y,q.r*2.7);}noStroke()}
+function updateStats(){let target=cfg,cover=0;for(let d of education)cover+=PI*d.r*d.r;let pct=min(96,Math.round(100*cover/(canvasW*canvasH)*.8));
+ const rows=[['skills',skills.length,Math.min(100,skills.length/118*100),String(skills.length)+' cells'],['edu',pct,pct,pct+'% coverage'],['experience',veins.length,Math.min(100,veins.length/218*100),String(veins.length)+' branches'],['awards',awards.length,Math.min(100,awards.length/31*100),String(awards.length)+' cells']];
+ for(let [id,_,p,s] of rows){let el=document.getElementById(id+'-stat'),bar=document.getElementById(id+'-bar');if(el)el.textContent=s;if(bar)bar.style.width=p+'%';}
+}
+</script>
+</body>
+</html>
